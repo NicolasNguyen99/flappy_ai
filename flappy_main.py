@@ -3,6 +3,7 @@ import neat
 import time
 import os
 import random
+
 pygame.font.init()
 
 WINDOW_WIDTH = 550
@@ -160,13 +161,51 @@ def draw_window(window, bird, pipes, base, score):
     for pipe in pipes:
         pipe.draw(window)
 
-    text = STAT_FONT.render("Score:" + str(score), 1, (255, 255, 255))
+    text = STAT_FONT.render("Score:" + str(score), True, (255, 255, 255))
     window.blit(text, (WINDOW_WIDTH - 10 - text.get_width(), 10))
 
     base.draw(window)
-
     bird.draw(window)
     pygame.display.update()
+
+
+def draw_game_over(window, score):
+    surface = pygame.Surface((WINDOW_WIDTH, WINDOW_HEIGHT), pygame.SRCALPHA)
+    surface.fill((240, 240, 240, 128))
+    window.blit(surface, (0, 0))
+
+    draw_score(window, score)
+
+    font = pygame.font.Font(None, 64)
+    text = font.render("Game Over", True, (255, 0, 0))
+    text_rect = text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 - 100))
+    window.blit(text, text_rect)
+    pygame.display.update()
+
+
+def draw_score(window, score):
+    font = pygame.font.Font(None, 48)
+    text = font.render("Your score: %d" % score, True, (0, 0, 0))
+    text_rect = text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2 + 50))
+    window.blit(text, text_rect)
+    pygame.display.update()
+
+
+class Button:
+    def __init__(self, x, y, width, height, text):
+        self.rect = pygame.Rect(x, y, width, height)
+        self.text = text
+
+    def draw(self, window):
+        pygame.draw.rect(window, (255, 255, 255), self.rect)
+        font = pygame.font.Font(None, 32)
+        text = font.render(self.text, True, (0, 0, 0))
+        text_rect = text.get_rect(center=self.rect.center)
+        window.blit(text, text_rect)
+        pygame.display.update()
+
+    def is_clicked(self, pos):
+        return self.rect.collidepoint(pos)
 
 
 def main():
@@ -175,15 +214,35 @@ def main():
     pipes = [Pipe(600)]
     window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     run = True
+    new_game_clicked = False
     score = 0
+    game_over = False
+
+    new_game_button = Button(WINDOW_WIDTH // 2 + 10, WINDOW_HEIGHT * 0.70, 200, 50, "New Game")
+    exit_game_button = Button(WINDOW_WIDTH // 2 - 210, WINDOW_HEIGHT * 0.70, 200, 50, "Exit Game")
 
     clock = pygame.time.Clock()
 
     while run:
-        clock.tick(30)  # Max 30 FPS
+        clock.tick(30)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    bird.jump()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if new_game_button.is_clicked(event.pos):
+                    new_game_clicked = True
+                if exit_game_button.is_clicked(event.pos):
+                    run = False
+
+        if new_game_clicked:
+            game_over = False
+            bird = Bird(230, 350)
+            pipes = [Pipe(600)]
+            score = 0
+            new_game_clicked = False
 
         bird.move()
         base.move()
@@ -191,7 +250,7 @@ def main():
         add_pipe = False
         for pipe in pipes:
             if pipe.collide(bird):
-                pass
+                game_over = True
 
             if pipe.x + pipe.PIPE_TOP.get_width() < 0:
                 remove_list.append(pipe)
@@ -210,9 +269,31 @@ def main():
             pipes.remove(pipe)
 
         if bird.y + bird.img.get_height() > 730:
-            pass
+            game_over = True
 
         draw_window(window, bird, pipes, base, score)
+
+        if game_over:
+            display_menu = True
+
+            draw_game_over(window, score)
+            new_game_button.draw(window)
+            exit_game_button.draw(window)
+
+            while display_menu:
+                for event in pygame.event.get():
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        if new_game_button.is_clicked(event.pos):
+                            bird = Bird(230, 350)
+                            pipes = [Pipe(600)]
+                            score = 0
+                            game_over = False
+                            run = True
+                            display_menu = False
+
+                        if exit_game_button.is_clicked(event.pos):
+                            pygame.quit()
+                            quit()
 
     pygame.quit()
     quit()
