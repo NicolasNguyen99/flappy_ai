@@ -18,7 +18,7 @@ BIRD_IMGS = [
     pygame.transform.scale2x(pygame.image.load(os.path.join("imgs", "bird3.png")))
 ]
 
-STAT_FONT = pygame.font.SysFont("comicsans", 40)
+STAT_FONT = pygame.font.SysFont("Ariel", 35)
 
 
 class Bird:
@@ -231,23 +231,12 @@ def main():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     bird.jump()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if new_game_button.is_clicked(event.pos):
-                    new_game_clicked = True
-                if exit_game_button.is_clicked(event.pos):
-                    run = False
-
-        if new_game_clicked:
-            game_over = False
-            bird = Bird(230, 350)
-            pipes = [Pipe(600)]
-            score = 0
-            new_game_clicked = False
 
         bird.move()
         base.move()
         remove_list = []
         add_pipe = False
+
         for pipe in pipes:
             if pipe.collide(bird):
                 game_over = True
