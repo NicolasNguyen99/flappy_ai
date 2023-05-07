@@ -155,7 +155,7 @@ class Base:
         window.blit(self.IMG, (self.x2, self.y))
 
 
-def draw_window(window, birds, pipes, base, score, GEN):
+def draw_window(window, birds, pipes, base, score, ge, GEN):
     window.blit(BG_IMG, (0, 0))
 
     for pipe in pipes:
@@ -164,10 +164,14 @@ def draw_window(window, birds, pipes, base, score, GEN):
     score = STAT_FONT.render("Score: " + str(score), 1, (255, 255, 255))
     birds_alive = STAT_FONT.render("Alive: " + str(len(birds)), 1, (255, 255, 255))
     generation = STAT_FONT.render("Generation: " + str(GEN), 1, (255, 255, 255))
+    if len(ge):
+        max_fitness = STAT_FONT.render("Max fitness: " + str(round(max(ge, key=lambda x: x.fitness).fitness)), 1, (255, 255, 255))
 
     window.blit(score, (WINDOW_WIDTH - 10 - score.get_width(), 10))
     window.blit(birds_alive, (10, 10))
     window.blit(generation, (10, 40))
+    if len(ge):
+        window.blit(max_fitness, (10, 70))
 
     base.draw(window)
 
@@ -256,7 +260,7 @@ def fitness(genomes, config):
                 networks.pop(x)
                 ge.pop(x)
 
-        draw_window(window, birds, pipes, base, score, GEN)
+        draw_window(window, birds, pipes, base, score, ge, GEN)
 
 
 def run(config_path):
