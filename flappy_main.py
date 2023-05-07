@@ -268,7 +268,7 @@ def main():
         for pipe in remove_list:
             pipes.remove(pipe)
 
-        if bird.y + bird.img.get_height() > 730:
+        if bird.y + bird.img.get_height() >= 730 or bird.y < 0:
             game_over = True
 
         draw_window(window, bird, pipes, base, score)
